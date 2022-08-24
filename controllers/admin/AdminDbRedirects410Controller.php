@@ -48,6 +48,9 @@ class AdminDbRedirects410Controller extends ModuleAdminController
             'url_antigua' => array(
                 'title' => $this->trans('Url', array(), 'Admin.Global'),
             ),
+            'date_add' => array(
+                'title' => $this->trans('Fecha', array(), 'Admin.Global'),
+            ),
             'active' => array(
                 'title' => 'Activo',
                 'active' => 'status',
@@ -77,6 +80,10 @@ class AdminDbRedirects410Controller extends ModuleAdminController
             return;
         }
 
+        if(Tools::getIsset('import410')){
+            $this->import410();
+        }
+
         return parent::initProcess();
     }
 
@@ -92,7 +99,13 @@ class AdminDbRedirects410Controller extends ModuleAdminController
         $this->addRowAction('delete');
 
         $list = parent::renderList();
-        return $list;
+        if($this->module->premium == 0){
+            return $list;
+        } else {
+            $form_csv = DbRedirectsPremium::renderFormCSV410();
+            return $list.$form_csv;
+        }
+
     }
 
     public function renderView()
@@ -187,4 +200,56 @@ class AdminDbRedirects410Controller extends ModuleAdminController
 
     }
 
+    public function import410()
+    {
+        $num = 0;
+        $file = $_FILES['file']['tmp_name'];
+        $handle = false;
+        if (is_file($file) && is_readable($file)) {
+            $handle = fopen($file, 'r');
+        }
+
+        if (!$handle) {
+            $this->errors[] = Tools::displayError('No se ha podido leer el fichero');
+        } else {
+            $ext = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
+            if($ext != 'csv' && $ext != 'CSV') {
+                $this->errors[] = Tools::displayError('El fichero no es un CSV');
+            }
+        }
+
+        while (($line = fgetcsv($handle, 10000, ";")) !== FALSE) {
+
+            if($num > 0) {
+                // Comprobamos que hay datos en todos los campos
+                $url_antigua = $line[0];
+                $url_nueva = '';
+                $active = $line[1];
+                if(empty($url_antigua) || empty($active)) {
+                    $this->context->controller->errors[] = $this->l( sprintf('Error en el contenido de la fila %s, hay algun campo sin contenido o formato incorrecto', $num + 2) );
+                    continue;
+                }
+
+                // Comprobamos la longitud de los campos
+                if(strlen($url_antigua) > 512) {
+                    $this->context->controller->errors[] = $this->l( sprintf('La URL: %s es demasiado larga, no puede superar 512 caracteres', $url_antigua) );
+                    continue;
+                }
+
+                $exists = DbRedirect::isRedirect(trim($url_antigua));
+                if(isset($exists['id_dbredirects']) && $exists['id_dbredirects'] > 0) {
+                    $this->context->controller->errors[] = $this->l( sprintf('La URL ya tiene un registro creado: %s', $url_antigua) );
+                } else {
+                    $redirect = new DbRedirect();
+                    $redirect->type = 2;
+                    $redirect->url_antigua = trim($url_antigua);
+                    $redirect->url_nueva = '';
+                    $redirect->active = trim($active);
+                    $redirect->add();
+                }
+            }
+            $num++;
+        }
+
+    }
 }

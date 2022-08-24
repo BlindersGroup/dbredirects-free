@@ -28,11 +28,15 @@ $sql = array();
 $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'dbredirects` (
     `id_dbredirects` int(11) NOT NULL AUTO_INCREMENT,
     `type` int(1) NOT NULL,
-    `url_antigua` VARCHAR(255) NOT NULL,
-    `url_nueva` VARCHAR(255) NOT NULL,
+    `url_antigua` VARCHAR(512) NOT NULL,
+    `url_nueva` VARCHAR(512) NOT NULL,
     `active` TINYINT(1) NOT NULL,
+    `date_add` datetime NOT NULL,
     PRIMARY KEY  (`id_dbredirects`)
 ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+$sql[] = 'ALTER TABLE '._DB_PREFIX_.'dbredirects  
+            ADD INDEX `performance` (`id_dbredirects`, `type`, `url_antigua`, `active`)';
 
 foreach ($sql as $query) {
     if (Db::getInstance()->execute($query) == false) {

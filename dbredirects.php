@@ -35,10 +35,16 @@ class Dbredirects extends Module
     public function __construct()
     {
         require_once(dirname(__FILE__).'/classes/DbRedirect.php');
+        if(file_exists(dirname(__FILE__).'/premium/DbPremium.php')){
+            require_once(dirname(__FILE__).'/premium/DbPremium.php');
+            $this->premium = 1;
+        } else {
+            $this->premium = 0;
+        }
 
         $this->name = 'dbredirects';
         $this->tab = 'administration';
-        $this->version = '1.1.0';
+        $this->version = '1.2.0';
         $this->author = 'DevBlinders';
         $this->need_instance = 0;
 

@@ -32,6 +32,6 @@ function upgrade_module_1_1_0($module)
 {
     return \Db::getInstance()->execute(
         'ALTER TABLE `' . _DB_PREFIX_ . 'dbredirects` 
-        ADD `date_add` datetime NOT NULL;
+        ADD COLUMN IF NOT EXISTS `date_add` datetime NOT NULL;
     ');
 }
