@@ -2,7 +2,7 @@
 <module>
 	<name>dbredirects</name>
 	<displayName><![CDATA[DB Redirects]]></displayName>
-	<version><![CDATA[1.1.0]]></version>
+	<version><![CDATA[1.2.0]]></version>
 	<description><![CDATA[Redirecciones 301 y bloqueos 410]]></description>
 	<author><![CDATA[DevBlinders]]></author>
 	<tab><![CDATA[administration]]></tab>
